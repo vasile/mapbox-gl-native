@@ -32,8 +32,8 @@ void Map::resume() {
     data->condResume.notify_all();
 }
 
-void Map::renderStill(StillImageCallback callback) {
-    context->invoke(&MapContext::renderStill, callback);
+void Map::renderStill(Duration timeout, StillImageCallback callback) {
+    context->invoke(&MapContext::renderStill, timeout, callback);
 }
 
 void Map::renderSync() {

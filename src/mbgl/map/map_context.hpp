@@ -14,6 +14,7 @@ typedef struct uv_loop_s uv_loop_t;
 
 namespace uv {
 class async;
+class timer;
 }
 
 namespace mbgl {
@@ -43,8 +44,8 @@ public:
 
     void resize(uint16_t width, uint16_t height, float ratio);
 
-    using StillImageCallback = std::function<void(std::unique_ptr<const StillImage>)>;
-    void renderStill(StillImageCallback callback);
+    using StillImageCallback = std::function<void(std::exception_ptr error, std::unique_ptr<const StillImage>)>;
+    void renderStill(Duration timeout, StillImageCallback callback);
 
     void triggerUpdate(Update = Update::Nothing);
 
@@ -93,7 +94,9 @@ private:
     std::string styleURL;
     std::string styleJSON;
 
-    StillImageCallback callback;
+    StillImageCallback stillCallback;
+    std::unique_ptr<uv::timer> stillTimeout;
+
     size_t sourceCacheSize;
     TransformState transformState;
 };

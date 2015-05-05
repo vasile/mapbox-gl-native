@@ -41,7 +41,8 @@ MapContext::MapContext(uv_loop_t* loop, View& view_, FileSource& fileSource, Map
       spriteAtlas(util::make_unique<SpriteAtlas>(512, 512)),
       lineAtlas(util::make_unique<LineAtlas>(512, 512)),
       texturePool(util::make_unique<TexturePool>()),
-      painter(util::make_unique<Painter>(*spriteAtlas, *glyphAtlas, *lineAtlas))
+      painter(util::make_unique<Painter>(*spriteAtlas, *glyphAtlas, *lineAtlas)),
+      stillTimeout(util::make_unique<uv::timer>(loop))
 {
     assert(Environment::currentlyOn(ThreadType::Map));
 
@@ -210,16 +211,23 @@ void MapContext::update() {
     updated = static_cast<UpdateType>(Update::Nothing);
 }
 
-void MapContext::renderStill(StillImageCallback fn) {
+void MapContext::renderStill(Duration timeout, StillImageCallback fn) {
     if (data.mode != MapMode::Still) {
         throw util::Exception("Map is not in still image render mode");
     }
 
-    if (callback) {
+    if (stillCallback) {
         throw util::Exception("Map is currently rendering an image");
     }
 
-    callback = fn;
+    stillTimeout->start(std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(), 0, [this] {
+        stillCallback(std::make_exception_ptr(std::runtime_error("renderStill timed out")), util::make_unique<StillImage>());
+        stillCallback = nullptr;
+        stillTimeout->stop();
+    });
+
+    stillCallback = fn;
+
     triggerUpdate(Update::RenderStill);
 }
 
@@ -234,9 +242,10 @@ void MapContext::render() {
 
     painter->render(*style, transformState, data.getAnimationTime());
 
-    if (data.mode == MapMode::Still && callback && style->isLoaded() && resourceLoader->getSprite()->isLoaded()) {
-        callback(view.readStillImage());
-        callback = nullptr;
+    if (data.mode == MapMode::Still && stillCallback && style->isLoaded() && resourceLoader->getSprite()->isLoaded()) {
+        stillCallback(std::exception_ptr(), view.readStillImage());
+        stillCallback = nullptr;
+        stillTimeout->stop();
     }
 
     // Schedule another rerender when we definitely need a next frame.

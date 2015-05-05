@@ -43,8 +43,8 @@ public:
 
     // Register a callback that will get called (on the render thread) when all resources have
     // been loaded and a complete render occurs.
-    using StillImageCallback = std::function<void(std::unique_ptr<const StillImage>)>;
-    void renderStill(StillImageCallback callback);
+    using StillImageCallback = std::function<void(std::exception_ptr error, std::unique_ptr<const StillImage>)>;
+    void renderStill(Duration timeout, StillImageCallback callback);
 
     // Triggers a synchronous or asynchronous render.
     void renderSync();

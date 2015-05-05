@@ -28,7 +28,8 @@ TEST(API, RepeatedRender) {
         map.resize(128, 512, 1);
         map.setStyleJSON(style, "test/suite");
         std::promise<std::unique_ptr<const StillImage>> promise;
-        map.renderStill([&promise](std::unique_ptr<const StillImage> image) {
+        map.renderStill(std::chrono::seconds(5), [&promise](std::exception_ptr error, std::unique_ptr<const StillImage> image) {
+            if (error) std::rethrow_exception(error);
             promise.set_value(std::move(image));
         });
         auto result = promise.get_future().get();
@@ -42,7 +43,8 @@ TEST(API, RepeatedRender) {
         map.resize(512, 512, 2);
         map.setStyleJSON(style, "TEST_DATA/suite");
         std::promise<std::unique_ptr<const StillImage>> promise;
-        map.renderStill([&promise](std::unique_ptr<const StillImage> image) {
+        map.renderStill(std::chrono::seconds(5), [&promise](std::exception_ptr error, std::unique_ptr<const StillImage> image) {
+            if (error) std::rethrow_exception(error);
             promise.set_value(std::move(image));
         });
         auto result = promise.get_future().get();
