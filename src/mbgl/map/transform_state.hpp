@@ -32,12 +32,6 @@ public:
     const std::array<uint16_t, 2> getFramebufferDimensions() const;
     float getPixelRatio() const;
 
-    float worldSize() const;
-    float lngX(float lon) const;
-    float latY(float lat) const;
-    std::array<float, 2> locationCoordinate(float lon, float lat) const;
-    void getLonLat(double &lon, double &lat) const;
-
     // Position
     const LatLng getLatLng() const;
 

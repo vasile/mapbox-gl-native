@@ -309,6 +309,8 @@ int32_t Source::coveringZoomLevel(const TransformState& state) const {
 }
 
 std::forward_list<TileID> Source::coveringTiles(const TransformState& state) const {
+
+
     int32_t z = coveringZoomLevel(state);
 
     if (z < info.min_zoom) return {{}};
@@ -390,6 +392,18 @@ void Source::update(MapData& data,
         return;
     }
 
+    mbgl::Log::Debug(mbgl::Event::Android, "source update");
+    mbgl::Log::Debug(mbgl::Event::Android, "transform state");
+    mbgl::Log::Debug(mbgl::Event::Android, "width %hu", transformState.getWidth());
+    mbgl::Log::Debug(mbgl::Event::Android, "height %hu", transformState.getHeight());
+    mbgl::Log::Debug(mbgl::Event::Android, "fb width %hu", transformState.getFramebufferWidth());
+    mbgl::Log::Debug(mbgl::Event::Android, "fb height %hu", transformState.getFramebufferHeight());
+    mbgl::Log::Debug(mbgl::Event::Android, "pixel ratio %f", transformState.getPixelRatio());
+    mbgl::Log::Debug(mbgl::Event::Android, "zoom %f", transformState.getZoom());
+    mbgl::Log::Debug(mbgl::Event::Android, "lat %f", transformState.getLatLng().latitude);
+    mbgl::Log::Debug(mbgl::Event::Android, "lng %f", transformState.getLatLng().longitude);
+    mbgl::Log::Debug(mbgl::Event::Android, "angle %f", transformState.getAngle());
+
     int32_t zoom = std::floor(getZoom(transformState));
     std::forward_list<TileID> required = coveringTiles(transformState);
 
@@ -404,6 +418,9 @@ void Source::update(MapData& data,
 
     // Add existing child/parent tiles if the actual tile is not yet loaded
     for (const auto& id : required) {
+      std::string name = id;
+      mbgl::Log::Debug(mbgl::Event::Android, "request tile %s", name.c_str());
+
         TileData::State state = hasTile(id);
 
         switch (state) {

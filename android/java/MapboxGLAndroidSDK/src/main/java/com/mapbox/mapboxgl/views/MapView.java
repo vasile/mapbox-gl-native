@@ -50,7 +50,6 @@ public class MapView extends SurfaceView {
 
     // Used for saving instance state
     private static final String STATE_CENTER_COORDINATE = "centerCoordinate";
-    private static final String STATE_CENTER_DIRECTION = "centerDirection";
     private static final String STATE_ZOOM_LEVEL = "zoomLevel";
     private static final String STATE_DIRECTION = "direction";
     private static final String STATE_ZOOM_ENABLED = "zoomEnabled";
@@ -145,16 +144,21 @@ public class MapView extends SurfaceView {
 
         // Create the NativeMapView
         mNativeMapView = new NativeMapView(this, cachePath, dataPath, apkPath);
+        double centerLatitude = -35.3075;
+        double centerLongitude = 149.1244;
+        LatLng centerCoordinate = new LatLng(centerLatitude, centerLongitude);
+        setCenterCoordinate(centerCoordinate);
+        setZoomLevel(10);
 
         // Load the attributes
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MapView, 0, 0);
         try {
-            double centerLongitude = typedArray.getFloat(R.styleable.MapView_centerLongitude, 0.0f);
-            double centerLatitude = typedArray.getFloat(R.styleable.MapView_centerLatitude, 0.0f);
-            LatLng centerCoordinate = new LatLng(centerLongitude, centerLatitude);
-            setCenterCoordinate(centerCoordinate);
-            setZoomLevel(typedArray.getFloat(R.styleable.MapView_zoomLevel, 0.0f)); // need to set zoom level first because of limitation on rotating when zoomed out
-            setDirection(typedArray.getFloat(R.styleable.MapView_direction, 0.0f));
+            //double centerLatitude = typedArray.getFloat(R.styleable.MapView_centerLatitude, 0.0f);
+            //double centerLongitude = typedArray.getFloat(R.styleable.MapView_centerLongitude, 0.0f);
+            //LatLng centerCoordinate = new LatLng(centerLatitude, centerLongitude);
+            //setCenterCoordinate(centerCoordinate);
+            //setZoomLevel(typedArray.getFloat(R.styleable.MapView_zoomLevel, 0.0f)); // need to set zoom level first because of limitation on rotating when zoomed out
+            //setDirection(typedArray.getFloat(R.styleable.MapView_direction, 0.0f));
             setZoomEnabled(typedArray.getBoolean(R.styleable.MapView_zoomEnabled, true));
             setScrollEnabled(typedArray.getBoolean(R.styleable.MapView_scrollEnabled, true));
             setRotateEnabled(typedArray.getBoolean(R.styleable.MapView_rotateEnabled, true));
@@ -398,10 +402,9 @@ public class MapView extends SurfaceView {
     // Must be called from Activity onCreate
     public void onCreate(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            setCenterCoordinate((LatLng) savedInstanceState.getParcelable(STATE_CENTER_COORDINATE));
-            setZoomLevel(savedInstanceState.getDouble(STATE_ZOOM_LEVEL)); // need to set zoom level first because of limitation on rotating when zoomed out
-            setDirection(savedInstanceState.getDouble(STATE_CENTER_DIRECTION));
-            setDirection(savedInstanceState.getDouble(STATE_DIRECTION));
+            //setCenterCoordinate((LatLng) savedInstanceState.getParcelable(STATE_CENTER_COORDINATE));
+            //setZoomLevel(savedInstanceState.getDouble(STATE_ZOOM_LEVEL)); // need to set zoom level first because of limitation on rotating when zoomed out
+            //setDirection(savedInstanceState.getDouble(STATE_DIRECTION));
             setZoomEnabled(savedInstanceState.getBoolean(STATE_ZOOM_ENABLED));
             setScrollEnabled(savedInstanceState.getBoolean(STATE_SCROLL_ENABLED));
             setRotateEnabled(savedInstanceState.getBoolean(STATE_ROTATE_ENABLED));
@@ -424,9 +427,9 @@ public class MapView extends SurfaceView {
     // Called when we need to save instance state
     // Must be called from Activity onSaveInstanceState
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelable(STATE_CENTER_COORDINATE, getCenterCoordinate());
-        outState.putDouble(STATE_ZOOM_LEVEL, getZoomLevel()); // need to set zoom level first because of limitation on rotating when zoomed out
-        outState.putDouble(STATE_CENTER_DIRECTION, getDirection());
+        //outState.putParcelable(STATE_CENTER_COORDINATE, getCenterCoordinate());
+        //outState.putDouble(STATE_ZOOM_LEVEL, getZoomLevel()); // need to set zoom level first because of limitation on rotating when zoomed out
+        //outState.putDouble(STATE_DIRECTION, getDirection());
         outState.putBoolean(STATE_ZOOM_ENABLED, mZoomEnabled);
         outState.putBoolean(STATE_SCROLL_ENABLED, mScrollEnabled);
         outState.putBoolean(STATE_ROTATE_ENABLED, mRotateEnabled);

@@ -568,7 +568,7 @@ void JNICALL nativeSetBearing(JNIEnv *env, jobject obj, jlong nativeMapViewPtr, 
 }
 
 jdouble JNICALL nativeGetBearing(JNIEnv *env, jobject obj, jlong nativeMapViewPtr) {
-    mbgl::Log::Debug(mbgl::Event::JNI, "nativeGetBearing");
+    //mbgl::Log::Debug(mbgl::Event::JNI, "nativeGetBearing");
     assert(nativeMapViewPtr != 0);
     NativeMapView *nativeMapView = reinterpret_cast<NativeMapView *>(nativeMapViewPtr);
     return nativeMapView->getMap().getBearing();
@@ -677,7 +677,7 @@ jobject JNICALL nativeLatLngForProjectedMeters(JNIEnv *env, jobject obj, jlong n
 }
 
 jobject JNICALL nativePixelForLatLng(JNIEnv *env, jobject obj, jlong nativeMapViewPtr, jobject latLng) {
-    mbgl::Log::Debug(mbgl::Event::JNI, "nativePixelForLatLng");
+    //mbgl::Log::Debug(mbgl::Event::JNI, "nativePixelForLatLng");
     assert(nativeMapViewPtr != 0);
     NativeMapView *nativeMapView = reinterpret_cast<NativeMapView *>(nativeMapViewPtr);
 

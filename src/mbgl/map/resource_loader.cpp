@@ -55,6 +55,7 @@ void ResourceLoader::update(MapData& data,
                             GlyphStore& glyphStore,
                             SpriteAtlas& spriteAtlas,
                             TexturePool& texturePool) {
+
     if (!style_) {
         return;
     }
