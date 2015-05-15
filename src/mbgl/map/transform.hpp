@@ -94,6 +94,8 @@ private:
     Duration transitionDuration;
     std::function<Update(TimePoint)> transitionFrameFn;
     std::function<void()> transitionFinishFn;
+
+    void printState();
 };
 
 }

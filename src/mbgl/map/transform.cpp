@@ -7,6 +7,7 @@
 #include <mbgl/util/unitbezier.hpp>
 #include <mbgl/util/interpolate.hpp>
 #include <mbgl/platform/platform.hpp>
+#include <mbgl/platform/log.hpp>
 
 #include <cstdio>
 
@@ -27,9 +28,23 @@ static double _normalizeAngle(double angle, double anchorAngle)
     return angle;
 }
 
+void Transform::printState() {
+    mbgl::Log::Debug(mbgl::Event::Android, "width %hu", current.getWidth());
+    mbgl::Log::Debug(mbgl::Event::Android, "height %hu", current.getHeight());
+    mbgl::Log::Debug(mbgl::Event::Android, "fb width %hu", current.getFramebufferWidth());
+    mbgl::Log::Debug(mbgl::Event::Android, "fb height %hu", current.getFramebufferHeight());
+    mbgl::Log::Debug(mbgl::Event::Android, "pixel ratio %f", current.getPixelRatio());
+    mbgl::Log::Debug(mbgl::Event::Android, "zoom %f", current.getZoom());
+    mbgl::Log::Debug(mbgl::Event::Android, "lat %f", current.getLatLng().latitude);
+    mbgl::Log::Debug(mbgl::Event::Android, "lng %f", current.getLatLng().longitude);
+    mbgl::Log::Debug(mbgl::Event::Android, "angle %f", current.getAngle());
+}
+
 Transform::Transform(View &view_)
     : view(view_)
 {
+    mbgl::Log::Debug(mbgl::Event::Android, "transform constructor");
+    printState();
 }
 
 #pragma mark - Map View
@@ -51,6 +66,9 @@ bool Transform::resize(const uint16_t w, const uint16_t h, const float ratio,
         constrain(current.scale, current.y);
 
         view.notifyMapChange(MapChangeRegionDidChange);
+
+        mbgl::Log::Debug(mbgl::Event::Android, "transform resize");
+        printState();
 
         return true;
     } else {
@@ -105,6 +123,9 @@ void Transform::_moveBy(const double dx, const double dy, const Duration duratio
                            MapChangeRegionDidChangeAnimated :
                            MapChangeRegionDidChange,
                            duration);
+
+    mbgl::Log::Debug(mbgl::Event::Android, "transform move by");
+    printState();
 }
 
 void Transform::setLatLng(const LatLng latLng, const Duration duration) {
@@ -241,6 +262,9 @@ void Transform::_setScale(double new_scale, double cx, double cy, const Duration
     const double xn = current.x * factor + ax;
     const double yn = current.y * factor + ay;
 
+    mbgl::Log::Debug(mbgl::Event::Android, "transform set scale");
+    printState();
+
     _setScaleXY(new_scale, xn, yn, duration);
 }
 
@@ -292,6 +316,9 @@ void Transform::_setScaleXY(const double new_scale, const double xn, const doubl
                            MapChangeRegionDidChangeAnimated :
                            MapChangeRegionDidChange,
                            duration);
+
+    mbgl::Log::Debug(mbgl::Event::Android, "transform set scale xy");
+    printState();
 }
 
 #pragma mark - Constraints
@@ -405,6 +432,9 @@ void Transform::_setAngle(double new_angle, const Duration duration) {
                            MapChangeRegionDidChangeAnimated :
                            MapChangeRegionDidChange,
                            duration);
+
+    mbgl::Log::Debug(mbgl::Event::Android, "transform set angle");
+    printState();
 }
 
 double Transform::getAngle() const {

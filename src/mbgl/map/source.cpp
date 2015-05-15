@@ -392,7 +392,7 @@ void Source::update(MapData& data,
         return;
     }
 
-    mbgl::Log::Debug(mbgl::Event::Android, "source update");
+    /*mbgl::Log::Debug(mbgl::Event::Android, "source update");
     mbgl::Log::Debug(mbgl::Event::Android, "transform state");
     mbgl::Log::Debug(mbgl::Event::Android, "width %hu", transformState.getWidth());
     mbgl::Log::Debug(mbgl::Event::Android, "height %hu", transformState.getHeight());
@@ -402,7 +402,7 @@ void Source::update(MapData& data,
     mbgl::Log::Debug(mbgl::Event::Android, "zoom %f", transformState.getZoom());
     mbgl::Log::Debug(mbgl::Event::Android, "lat %f", transformState.getLatLng().latitude);
     mbgl::Log::Debug(mbgl::Event::Android, "lng %f", transformState.getLatLng().longitude);
-    mbgl::Log::Debug(mbgl::Event::Android, "angle %f", transformState.getAngle());
+    mbgl::Log::Debug(mbgl::Event::Android, "angle %f", transformState.getAngle());*/
 
     int32_t zoom = std::floor(getZoom(transformState));
     std::forward_list<TileID> required = coveringTiles(transformState);
