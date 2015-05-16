@@ -88,14 +88,14 @@ before_install:
 install:
 - ./scripts/${FLAVOR}/install.sh
 
-before_script:
-- if [ -f ./scripts/${FLAVOR}/setup.sh ]; then source ./scripts/${FLAVOR}/setup.sh; fi
-
 script:
 - ./scripts/${FLAVOR}/run.sh
 
 after_failure:
-- "[ -f ./scripts/${FLAVOR}/run.sh ] && ./scripts/${FLAVOR}/run.sh"
+- "[ -f ./scripts/${FLAVOR}/after_failure.sh ] && ./scripts/${FLAVOR}/after_failure.sh"
+
+after_failure:
+- "[ -f ./scripts/${FLAVOR}/after_script.sh ] && ./scripts/${FLAVOR}/after_script.sh"
 
 notifications:
   slack:

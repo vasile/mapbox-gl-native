@@ -1,3 +1,4 @@
+<img src="https://cloud.githubusercontent.com/assets/5521326/7577913/fd9f01da-f81b-11e4-9495-cda211d77f53.png" height=250 />  
 [![Travis](https://api.travis-ci.org/mapbox/mapbox-gl-native.svg?branch=master)](https://travis-ci.org/mapbox/mapbox-gl-native/builds)
 
 An OpenGL renderer for [Mapbox Vector Tiles](https://www.mapbox.com/blog/vector-tiles), consisting of a C++ library for OS X and Linux and SDK bindings for iOS and Android.
@@ -49,14 +50,12 @@ Target OS X: 10.9+
 
 #### CocoaPods
 
-CocoaPods is preferred. As of yet, Mapbox GL isn't in the global specs repo, but you can use it like so in your `Podfile`: 
+[CocoaPods](https://cocoapods.org) is preferred. Put the following in your `Podfile`: 
 
 ```ruby
 use_frameworks!
-pod 'MapboxGL', :podspec => 'https://raw.githubusercontent.com/mapbox/mapbox-gl-native/master/ios/MapboxGL.podspec'
+pod 'MapboxGL'
 ```
-
-Once the library stabilizes, a mere `pod 'MapboxGL'` will work. 
 
 #### Manually
 

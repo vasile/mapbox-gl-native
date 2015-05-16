@@ -8,7 +8,6 @@
 #include <mbgl/renderer/line_bucket.hpp>
 #include <mbgl/renderer/symbol_bucket.hpp>
 #include <mbgl/util/constants.hpp>
-#include <mbgl/text/collision.hpp>
 #include <mbgl/util/std.hpp>
 #include <mbgl/style/style.hpp>
 
@@ -35,13 +34,13 @@ TileParser::TileParser(const GeometryTile& geometryTile_,
       glyphStore(glyphStore_),
       spriteAtlas(spriteAtlas_),
       sprite(sprite_),
-      collision(util::make_unique<Collision>(tile.id.z, 4096, tile.source.tile_size, tile.depth)),
       partialParse(false) {
     assert(sprite);
-    assert(collision);
 }
 
-bool TileParser::obsolete() const { return tile.state == TileData::State::obsolete; }
+bool TileParser::obsolete() const {
+    return tile.getState() == TileData::State::obsolete;
+}
 
 void TileParser::parse() {
     for (const auto& layer_desc : style.layers) {
@@ -119,14 +118,7 @@ std::unique_ptr<Bucket> TileParser::createBucket(const StyleBucket &bucketDesc) 
         } else if (bucketDesc.type == StyleLayerType::Line) {
             return createLineBucket(*layer, bucketDesc);
         } else if (bucketDesc.type == StyleLayerType::Symbol) {
-            bool needsResources = false;
-            auto symbolBucket = createSymbolBucket(*layer, bucketDesc, needsResources);
-            if (needsResources) {
-                partialParse = true;
-                return nullptr;
-            } else {
-                return std::move(symbolBucket);
-            }
+            return createSymbolBucket(*layer, bucketDesc);
         } else if (bucketDesc.type == StyleLayerType::Raster) {
             return nullptr;
         } else {
@@ -187,14 +179,8 @@ std::unique_ptr<Bucket> TileParser::createLineBucket(const GeometryTileLayer& la
 }
 
 std::unique_ptr<Bucket> TileParser::createSymbolBucket(const GeometryTileLayer& layer,
-                                                       const StyleBucket& bucket_desc,
-                                                       bool& needsResources) {
-    if (!sprite->isLoaded()) {
-        needsResources = true;
-        return nullptr;
-    }
-
-    auto bucket = util::make_unique<SymbolBucket>(*collision);
+                                                       const StyleBucket& bucket_desc) {
+    auto bucket = util::make_unique<SymbolBucket>(*tile.getCollision());
 
     const float z = tile.id.z;
     auto& layout = bucket->layout;
@@ -237,13 +223,20 @@ std::unique_ptr<Bucket> TileParser::createSymbolBucket(const GeometryTileLayer& 
     applyLayoutProperty(PropertyKey::TextOffset, bucket_desc.layout, layout.text.offset, z);
     applyLayoutProperty(PropertyKey::TextAllowOverlap, bucket_desc.layout, layout.text.allow_overlap, z);
 
-    bucket->addFeatures(
-        layer, bucket_desc.filter, reinterpret_cast<uintptr_t>(&tile), spriteAtlas, *sprite, glyphAtlas, glyphStore);
+    if (bucket->needsDependencies(layer, bucket_desc.filter, glyphStore, *sprite)) {
+        partialParse = true;
+    }
 
-    if (bucket->needsGlyphs()) {
-        needsResources = true;
+    // We do not proceed if the parser is in a "partial" state because
+    // the layer ordering needs to be respected when calculating text
+    // collisions. Although, at this point, we requested all the resources
+    // needed by this tile.
+    if (partialParse) {
         return nullptr;
     }
+
+    bucket->addFeatures(
+        reinterpret_cast<uintptr_t>(&tile), spriteAtlas, *sprite, glyphAtlas, glyphStore);
 
     return bucket->hasData() ? std::move(bucket) : nullptr;
 }

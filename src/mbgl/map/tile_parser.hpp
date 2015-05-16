@@ -29,7 +29,6 @@ class StyleLayoutRaster;
 class StyleLayoutLine;
 class StyleLayoutSymbol;
 class VectorTileData;
-class Collision;
 
 class TileParser : private util::noncopyable {
 public:
@@ -54,7 +53,7 @@ private:
     std::unique_ptr<Bucket> createBucket(const StyleBucket&);
     std::unique_ptr<Bucket> createFillBucket(const GeometryTileLayer&, const StyleBucket&);
     std::unique_ptr<Bucket> createLineBucket(const GeometryTileLayer&, const StyleBucket&);
-    std::unique_ptr<Bucket> createSymbolBucket(const GeometryTileLayer&, const StyleBucket&, bool& needsResources);
+    std::unique_ptr<Bucket> createSymbolBucket(const GeometryTileLayer&, const StyleBucket&);
 
     template <class Bucket>
     void addBucketGeometries(Bucket&, const GeometryTileLayer&, const FilterExpression&);
@@ -69,7 +68,6 @@ private:
     SpriteAtlas& spriteAtlas;
     util::ptr<Sprite> sprite;
 
-    std::unique_ptr<Collision> collision;
     bool partialParse;
 };
 

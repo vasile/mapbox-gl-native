@@ -20,6 +20,7 @@
 #import "NSString+MGLAdditions.h"
 #import "NSProcessInfo+MGLAdditions.h"
 #import "NSException+MGLAdditions.h"
+#import "MGLAccountManager.h"
 #import "MGLAnnotation.h"
 #import "MGLUserLocationAnnotationView.h"
 #import "MGLUserLocation_Private.h"
@@ -33,8 +34,6 @@
 #import <algorithm>
 
 class MBGLView;
-
-static dispatch_once_t loadGLExtensions;
 
 NSString *const MGLDefaultStyleName = @"mapbox-streets";
 NSString *const MGLStyleVersion = @"7";
@@ -158,7 +157,7 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
 - (void)setAccessToken:(NSString *)accessToken
 {
     _mbglMap->setAccessToken(accessToken ? (std::string)[accessToken UTF8String] : "");
-    [MGLMapboxEvents setToken:accessToken.mgl_stringOrNilIfEmpty];
+    [MGLAccountManager setAccessToken:accessToken.mgl_stringOrNilIfEmpty];
 }
 
 + (NSSet *)keyPathsForValuesAffectingStyleURL
@@ -211,14 +210,6 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     //
     self.accessibilityLabel = @"Map";
 
-    // metrics: initial setup
-    NSString *appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"];
-    NSString *appVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-    NSString *appBuildNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
-    if (appName != nil) [MGLMapboxEvents setAppName:appName];
-    if (appVersion != nil) [MGLMapboxEvents setAppVersion:appVersion];
-    if (appBuildNumber != nil) [MGLMapboxEvents setAppBuildNumber:appBuildNumber];
-
     // create GL view
     //
     _glView = [[GLKView alloc] initWithFrame:self.bounds context:_context];
@@ -240,32 +231,17 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
 
     // load extensions
     //
-    dispatch_once(&loadGLExtensions, ^
-    {
-        const std::string extensions = (char *)glGetString(GL_EXTENSIONS);
-
-        using namespace mbgl;
-
-        if (extensions.find("GL_OES_vertex_array_object") != std::string::npos) {
-            gl::BindVertexArray = glBindVertexArrayOES;
-            gl::DeleteVertexArrays = glDeleteVertexArraysOES;
-            gl::GenVertexArrays = glGenVertexArraysOES;
-            gl::IsVertexArray = glIsVertexArrayOES;
+    mbgl::gl::InitializeExtensions([](const char * name) {
+        static CFBundleRef framework = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.opengles"));
+        if (!framework) {
+            throw std::runtime_error("Failed to load OpenGL framework.");
         }
 
-        if (extensions.find("GL_EXT_debug_marker") != std::string::npos) {
-            gl::InsertEventMarkerEXT = glInsertEventMarkerEXT;
-            gl::PushGroupMarkerEXT = glPushGroupMarkerEXT;
-            gl::PopGroupMarkerEXT = glPopGroupMarkerEXT;
-        }
+        CFStringRef str = CFStringCreateWithCString(kCFAllocatorDefault, name, kCFStringEncodingASCII);
+        void* symbol = CFBundleGetFunctionPointerForName(framework, str);
+        CFRelease(str);
 
-        if (extensions.find("GL_OES_packed_depth_stencil") != std::string::npos) {
-            gl::isPackedDepthStencilSupported = YES;
-        }
-
-        if (extensions.find("GL_OES_depth24") != std::string::npos) {
-            gl::isDepth24Supported = YES;
-        }
+        return reinterpret_cast<mbgl::gl::glProc>(symbol);
     });
 
     // setup mbgl map
@@ -666,6 +642,12 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     {
         [self.attributionSheet dismissWithClickedButtonIndex:self.attributionSheet.cancelButtonIndex animated:YES];
     }
+
+    if (self.compass.alpha)
+    {
+        [self updateHeadingForDeviceOrientation];
+        [self updateCompass];
+    }
 }
 
 #pragma mark - Life Cycle -
@@ -714,6 +696,8 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     if (self.isDormant)
     {
         self.dormant = NO;
+        
+        [MGLMapboxEvents validate];
 
         self.glSnapshotView.hidden = YES;
 
