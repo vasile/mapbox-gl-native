@@ -147,8 +147,10 @@ public class MapView extends SurfaceView {
         double centerLatitude = -35.3075;
         double centerLongitude = 149.1244;
         LatLng centerCoordinate = new LatLng(centerLatitude, centerLongitude);
-        setCenterCoordinate(centerCoordinate);
-        setZoomLevel(10);
+        //setCenterCoordinate(centerCoordinate);
+        //setZoomLevel(10);
+
+        mNativeMapView.setLatLngZoom(new LatLngZoom(new LatLng(0, 0), mNativeMapView.getMinZoom()));
 
         // Load the attributes
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MapView, 0, 0);
@@ -222,7 +224,10 @@ public class MapView extends SurfaceView {
 
     public void setCenterCoordinate(LatLng centerCoordinate, boolean animated) {
         long duration = animated ? ANIMATION_DURATION : 0;
-        mNativeMapView.setLatLng(centerCoordinate, duration);
+        //mNativeMapView.setLatLng(centerCoordinate, duration);
+
+        LatLngZoom llz = new LatLngZoom(centerCoordinate, mNativeMapView.getZoom());
+        mNativeMapView.setLatLngZoom(llz, duration);
     }
 
     public void setCenterCoordinate(LatLngZoom centerCoordinate) {
@@ -275,7 +280,10 @@ public class MapView extends SurfaceView {
 
     public void setZoomLevel(double zoomLevel, boolean animated) {
         long duration = animated ? ANIMATION_DURATION : 0;
-        mNativeMapView.setZoom(zoomLevel, duration);
+        //mNativeMapView.setZoom(zoomLevel, duration);
+
+        LatLngZoom llz = new LatLngZoom(mNativeMapView.getLatLng(), zoomLevel);
+        mNativeMapView.setLatLngZoom(llz, duration);
     }
 
     public boolean isZoomEnabled() {
