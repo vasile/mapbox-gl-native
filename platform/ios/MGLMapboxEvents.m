@@ -278,7 +278,7 @@ const NSTimeInterval MGLFlushInterval = 60;
 // Can be called from any thread. Called implicitly from any
 // public class convenience methods. May return nil if this feature is disabled.
 //
-+ (instancetype)sharedManager {
++ (nullable instancetype)sharedManager {
     if (NSProcessInfo.processInfo.mgl_isInterfaceBuilderDesignablesAgent) {
         return nil;
     }

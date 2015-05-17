@@ -67,7 +67,6 @@ static NSURL *MGLURLForBundledStyleNamed(NSString *styleName)
 @property (nonatomic) UIPinchGestureRecognizer *pinch;
 @property (nonatomic) UIRotationGestureRecognizer *rotate;
 @property (nonatomic) UILongPressGestureRecognizer *quickZoom;
-@property (nonatomic) NSMutableArray *bundledStyleURLs;
 @property (nonatomic) NSMapTable *annotationIDsByAnnotation;
 @property (nonatomic) std::vector<uint32_t> annotationsNearbyLastTap;
 @property (nonatomic, weak) id <MGLAnnotation> selectedAnnotation;
@@ -89,6 +88,8 @@ static NSURL *MGLURLForBundledStyleNamed(NSString *styleName)
     mbgl::Map *_mbglMap;
     MBGLView *_mbglView;
     mbgl::DefaultFileSource *_mbglFileSource;
+    
+    NSMutableArray *_bundledStyleURLs;
 
     BOOL _isTargetingInterfaceBuilder;
     CLLocationDegrees _pendingLatitude;
@@ -104,7 +105,7 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     return std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float, std::chrono::seconds::period>(duration));
 }
 
-- (instancetype)initWithFrame:(CGRect)frame
+- (nullable instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
 
@@ -118,12 +119,20 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     return nil;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame accessToken:(NSString *)accessToken
+- (nullable instancetype)initWithFrame:(CGRect)frame accessToken:(NSString *)accessToken
 {
-    return [self initWithFrame:frame accessToken:accessToken styleURL:nil];
+    self = [super initWithFrame:frame];
+
+    if (self && [self commonInit])
+    {
+        self.accessToken = accessToken;
+        self.styleURL = nil; // sets the default style
+    }
+
+    return self;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame accessToken:(NSString *)accessToken styleURL:(NSURL *)styleURL
+- (nullable instancetype)initWithFrame:(CGRect)frame accessToken:(NSString *)accessToken styleURL:(NSURL *)styleURL
 {
     self = [super initWithFrame:frame];
 
@@ -136,7 +145,7 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     return self;
 }
 
-- (instancetype)initWithCoder:(NSCoder *)decoder
+- (nullable instancetype)initWithCoder:(nonnull NSCoder *)decoder
 {
     self = [super initWithCoder:decoder];
 
@@ -149,12 +158,12 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     return nil;
 }
 
-- (NSString *)accessToken
+- (nullable NSString *)accessToken
 {
     return @(_mbglMap->getAccessToken().c_str()).mgl_stringOrNilIfEmpty;
 }
 
-- (void)setAccessToken:(NSString *)accessToken
+- (void)setAccessToken:(nullable NSString *)accessToken
 {
     _mbglMap->setAccessToken(accessToken ? (std::string)[accessToken UTF8String] : "");
     [MGLAccountManager setAccessToken:accessToken.mgl_stringOrNilIfEmpty];
@@ -165,13 +174,14 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     return [NSSet setWithObjects:@"mapID", @"accessToken", nil];
 }
 
-- (NSURL *)styleURL
+- (nonnull NSURL *)styleURL
 {
     NSString *styleURLString = @(_mbglMap->getStyleURL().c_str()).mgl_stringOrNilIfEmpty;
+    NSAssert(styleURLString || _isTargetingInterfaceBuilder, @"Invalid style URL string %@", styleURLString);
     return styleURLString ? [NSURL URLWithString:styleURLString] : nil;
 }
 
-- (void)setStyleURL:(NSURL *)styleURL
+- (void)setStyleURL:(nullable NSURL *)styleURL
 {
     if (_isTargetingInterfaceBuilder) return;
 
@@ -423,7 +433,7 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     }
 }
 
-- (void)setDelegate:(id<MGLMapViewDelegate>)delegate
+- (void)setDelegate:(nullable id<MGLMapViewDelegate>)delegate
 {
     if (_delegate == delegate) return;
 
@@ -1228,6 +1238,7 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
 {
     if ([self.delegate respondsToSelector:@selector(mapView:annotation:calloutAccessoryControlTapped:)])
     {
+        NSAssert([tap.view isKindOfClass:[UIControl class]], @"Tapped view %@ is not a UIControl", tap.view);
         [self.delegate mapView:self annotation:self.selectedAnnotation
             calloutAccessoryControlTapped:(UIControl *)tap.view];
     }
@@ -1470,7 +1481,7 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     [self setDirection:direction animated:NO];
 }
 
-- (CLLocationCoordinate2D)convertPoint:(CGPoint)point toCoordinateFromView:(UIView *)view
+- (CLLocationCoordinate2D)convertPoint:(CGPoint)point toCoordinateFromView:(nullable UIView *)view
 {
     CGPoint convertedPoint = [self convertPoint:point fromView:view];
 
@@ -1481,7 +1492,7 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
     return latLngToCoordinate(_mbglMap->latLngForPixel(mbgl::vec2<double>(convertedPoint.x, convertedPoint.y)));
 }
 
-- (CGPoint)convertCoordinate:(CLLocationCoordinate2D)coordinate toPointToView:(UIView *)view
+- (CGPoint)convertCoordinate:(CLLocationCoordinate2D)coordinate toPointToView:(nullable UIView *)view
 {
     mbgl::vec2<double> pixel = _mbglMap->pixelForLatLng(coordinateToLatLng(coordinate));
 
@@ -1548,13 +1559,13 @@ CLLocationCoordinate2D latLngToCoordinate(mbgl::LatLng latLng)
     return [NSSet setWithObjects:@"styleURL", @"accessToken", nil];
 }
 
-- (NSString *)mapID
+- (nullable NSString *)mapID
 {
     NSURL *styleURL = self.styleURL;
     return [styleURL.scheme isEqualToString:@"mapbox"] ? styleURL.host.mgl_stringOrNilIfEmpty : nil;
 }
 
-- (void)setMapID:(NSString *)mapID
+- (void)setMapID:(nullable NSString *)mapID
 {
     if (mapID)
     {
@@ -1621,7 +1632,7 @@ CLLocationCoordinate2D latLngToCoordinate(mbgl::LatLng latLng)
 
 #pragma mark - Annotations -
 
-- (NSArray *)annotations
+- (nullable NSArray *)annotations
 {
     if ([_annotationIDsByAnnotation count])
     {
@@ -1930,7 +1941,7 @@ CLLocationCoordinate2D latLngToCoordinate(mbgl::LatLng latLng)
     return [NSSet setWithObject:@"userLocationAnnotationView"];
 }
 
-- (MGLUserLocation *)userLocation
+- (nullable MGLUserLocation *)userLocation
 {
     return self.userLocationAnnotationView.annotation;
 }

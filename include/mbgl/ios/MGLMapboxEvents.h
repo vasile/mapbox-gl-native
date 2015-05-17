@@ -1,4 +1,6 @@
-#import <Foundation/Foundation.h>
+#import "MGLTypes.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const MGLEventTypeMapLoad;
 extern NSString *const MGLEventTypeMapTap;
@@ -58,3 +60,5 @@ extern NSString *const MGLEventGestureRotateStart;
 + (void)validate;
 
 @end
+
+NS_ASSUME_NONNULL_END
