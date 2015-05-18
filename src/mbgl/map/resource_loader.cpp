@@ -104,6 +104,10 @@ void ResourceLoader::onGlyphRangeLoaded() {
     emitTileDataChanged();
 }
 
+void ResourceLoader::onGlyphRangeLoadingFailed() {
+    emitResourceLoadingFailed();
+}
+
 void ResourceLoader::onSourceLoaded() {
     emitTileDataChanged();
 }

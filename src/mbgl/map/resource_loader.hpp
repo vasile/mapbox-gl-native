@@ -63,6 +63,7 @@ public:
 
     // GlyphStore::Observer implementation.
     void onGlyphRangeLoaded() override;
+    void onGlyphRangeLoadingFailed() override;
 
     // Source::Observer implementation.
     void onSourceLoaded() override;

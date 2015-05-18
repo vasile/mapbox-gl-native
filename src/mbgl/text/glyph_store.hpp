@@ -59,12 +59,14 @@ private:
 class GlyphPBF {
 public:
     using GlyphLoadedCallback = std::function<void(GlyphPBF*)>;
+    using GlyphLoadingFailedCallback = std::function<void()>;
 
     GlyphPBF(const std::string &glyphURL,
              const std::string &fontStack,
              GlyphRange glyphRange,
              Environment &env,
-             const GlyphLoadedCallback& callback);
+             const GlyphLoadedCallback& successCallback,
+             const GlyphLoadingFailedCallback& failureCallback);
     ~GlyphPBF();
 
     void parse(FontStack &stack);
@@ -91,6 +93,7 @@ public:
         virtual ~Observer() = default;
 
         virtual void onGlyphRangeLoaded() = 0;
+        virtual void onGlyphRangeLoadingFailed() = 0;
     };
 
     GlyphStore(uv_loop_t* loop, Environment &);
@@ -110,6 +113,7 @@ public:
 
 private:
     void emitGlyphRangeLoaded();
+    void emitGlyphRangeLoadingFailed();
 
     util::exclusive<FontStack> createFontStack(const std::string &fontStack);
 
@@ -123,6 +127,7 @@ private:
     std::mutex stacksMutex;
 
     std::unique_ptr<uv::async> asyncEmitGlyphRangeLoaded;
+    std::unique_ptr<uv::async> asyncEmitGlyphRangeLoadedingFailed;
 
     Observer* observer;
 };
