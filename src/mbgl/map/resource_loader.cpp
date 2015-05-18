@@ -130,4 +130,12 @@ void ResourceLoader::emitTileDataChanged() {
     }
 }
 
+void ResourceLoader::emitResourceLoadingFailed() {
+    assert(Environment::currentlyOn(ThreadType::Map));
+
+    if (observer_) {
+        observer_->onResourceLoadingFailed();
+    }
+}
+
 }

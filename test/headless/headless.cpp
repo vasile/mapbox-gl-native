@@ -156,7 +156,7 @@ TEST_P(HeadlessTest, render) {
             const std::string png = util::compress_png(image->width, image->height, image->pixels.get());
             util::write_file("test/suite/tests/" + base + "/" + name +  "/actual.png", png);
             promise.set_value();
-        });
+        }, []{});
 
         promise.get_future().get();
     }

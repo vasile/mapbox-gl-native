@@ -36,8 +36,8 @@ void Map::resume() {
     paused = false;
 }
 
-void Map::renderStill(StillImageCallback callback) {
-    context->invoke(&MapContext::renderStill, callback);
+void Map::renderStill(RenderStillSuccessCallback success, RenderStillFailureCallback failure) {
+    context->invoke(&MapContext::renderStill, success, failure);
 }
 
 void Map::renderSync() {

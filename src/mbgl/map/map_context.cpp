@@ -197,16 +197,17 @@ void MapContext::update() {
     updated = static_cast<UpdateType>(Update::Nothing);
 }
 
-void MapContext::renderStill(StillImageCallback fn) {
+void MapContext::renderStill(RenderStillSuccessCallback success, RenderStillFailureCallback failure) {
     if (data.mode != MapMode::Still) {
         throw util::Exception("Map is not in still image render mode");
     }
 
-    if (callback) {
+    if (successCallback) {
         throw util::Exception("Map is currently rendering an image");
     }
 
-    callback = fn;
+    successCallback = success;
+    failureCallback = failure;
     triggerUpdate(Update::RenderStill);
 }
 
@@ -216,7 +217,7 @@ void MapContext::render() {
     // Cleanup OpenGL objects that we abandoned since the last render call.
     env.performCleanup();
 
-    if (data.mode == MapMode::Still && (!callback || !data.getFullyLoaded())) {
+    if (data.mode == MapMode::Still && (!successCallback || !data.getFullyLoaded())) {
         // We are either not waiting for a map to be rendered, or we don't have all resources yet.
         return;
     }
@@ -232,8 +233,8 @@ void MapContext::render() {
     painter->render(*style, transformState, data.getAnimationTime());
 
     if (data.mode == MapMode::Still) {
-        callback(view.readStillImage());
-        callback = nullptr;
+        successCallback(view.readStillImage());
+        successCallback = nullptr;
     }
 
     // Schedule another rerender when we definitely need a next frame.
@@ -272,6 +273,15 @@ void MapContext::onLowMemory() {
 void MapContext::onTileDataChanged() {
     assert(Environment::currentlyOn(ThreadType::Map));
     triggerUpdate();
+}
+
+void MapContext::onResourceLoadingFailed() {
+    assert(Environment::currentlyOn(ThreadType::Map));
+
+    if (data.mode == MapMode::Still && failureCallback) {
+        failureCallback();
+        failureCallback = nullptr;
+    }
 }
 
 }

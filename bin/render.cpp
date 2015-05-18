@@ -26,6 +26,9 @@ namespace po = boost::program_options;
 #include <cstdlib>
 #include <iostream>
 
+uv_async_t *asyncSuccess = new uv_async_t;
+uv_async_t *asyncFailure = new uv_async_t;
+
 int main(int argc, char *argv[]) {
     std::string style_path;
     double lat = 0, lon = 0;
@@ -100,21 +103,40 @@ int main(int argc, char *argv[]) {
         map.setDebug(debug);
     }
 
-    uv_async_t *async = new uv_async_t;
-    uv_async_init(uv_default_loop(), async, [](uv_async_t *as, int) {
+    uv_async_init(uv_default_loop(), asyncSuccess, [](uv_async_t *as, int) {
         std::unique_ptr<const StillImage> image(reinterpret_cast<const StillImage *>(as->data));
-        uv_close(reinterpret_cast<uv_handle_t *>(as), [](uv_handle_t *handle) {
-            delete reinterpret_cast<uv_async_t *>(handle);
-        });
-
         const std::string png = util::compress_png(image->width, image->height, image->pixels.get());
         util::write_file(output, png);
+
+        uv_close(reinterpret_cast<uv_handle_t *>(asyncSuccess), [](uv_handle_t *handle) {
+            delete reinterpret_cast<uv_async_t *>(handle);
+        });
+        uv_close(reinterpret_cast<uv_handle_t *>(asyncFailure), [](uv_handle_t *handle) {
+            delete reinterpret_cast<uv_async_t *>(handle);
+        });
     });
 
-    map.renderStill([async](std::unique_ptr<const StillImage> image) {
-        async->data = const_cast<StillImage *>(image.release());
-        uv_async_send(async);
+    auto successCallback = [](std::unique_ptr<const StillImage> image) {
+        asyncSuccess->data = const_cast<StillImage *>(image.release());
+        uv_async_send(asyncSuccess);
+    };
+
+    uv_async_init(uv_default_loop(), asyncFailure, [](uv_async_t *, int) {
+        std::cout << "Error: could not render still" << std::endl;
+
+        uv_close(reinterpret_cast<uv_handle_t *>(asyncSuccess), [](uv_handle_t *handle) {
+            delete reinterpret_cast<uv_async_t *>(handle);
+        });
+        uv_close(reinterpret_cast<uv_handle_t *>(asyncFailure), [](uv_handle_t *handle) {
+            delete reinterpret_cast<uv_async_t *>(handle);
+        });
     });
+
+    auto failureCallback = []() {
+        uv_async_send(asyncFailure);
+    };
+
+    map.renderStill(successCallback, failureCallback);
 
     // This loop will terminate once the async was fired.
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);

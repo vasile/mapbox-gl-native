@@ -41,9 +41,10 @@ public:
     void resume();
 
     // Register a callback that will get called (on the render thread) when all resources have
-    // been loaded and a complete render occurs.
-    using StillImageCallback = std::function<void(std::unique_ptr<const StillImage>)>;
-    void renderStill(StillImageCallback callback);
+    // been loaded and a complete render occurs and a callback in case any error occurs.
+    using RenderStillSuccessCallback = std::function<void(std::unique_ptr<const StillImage>)>;
+    using RenderStillFailureCallback = std::function<void()>;
+    void renderStill(RenderStillSuccessCallback, RenderStillFailureCallback);
 
     // Triggers a synchronous or asynchronous render.
     void renderSync();

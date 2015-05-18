@@ -30,7 +30,7 @@ TEST(API, RepeatedRender) {
         std::promise<std::unique_ptr<const StillImage>> promise;
         map.renderStill([&promise](std::unique_ptr<const StillImage> image) {
             promise.set_value(std::move(image));
-        });
+        }, []{});
         auto result = promise.get_future().get();
         ASSERT_EQ(128, result->width);
         ASSERT_EQ(512, result->height);
@@ -44,7 +44,7 @@ TEST(API, RepeatedRender) {
         std::promise<std::unique_ptr<const StillImage>> promise;
         map.renderStill([&promise](std::unique_ptr<const StillImage> image) {
             promise.set_value(std::move(image));
-        });
+        }, []{});
         auto result = promise.get_future().get();
         ASSERT_EQ(1024, result->width);
         ASSERT_EQ(1024, result->height);

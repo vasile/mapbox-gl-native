@@ -32,6 +32,7 @@ public:
         virtual ~Observer() = default;
 
         virtual void onTileDataChanged() = 0;
+        virtual void onResourceLoadingFailed() = 0;
     };
 
     ResourceLoader();
@@ -72,6 +73,7 @@ public:
 
 private:
     void emitTileDataChanged();
+    void emitResourceLoadingFailed();
 
     bool shouldReparsePartialTiles_ = false;
 

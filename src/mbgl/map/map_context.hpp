@@ -43,8 +43,9 @@ public:
 
     void resize(uint16_t width, uint16_t height, float ratio);
 
-    using StillImageCallback = std::function<void(std::unique_ptr<const StillImage>)>;
-    void renderStill(StillImageCallback callback);
+    using RenderStillSuccessCallback = std::function<void(std::unique_ptr<const StillImage>)>;
+    using RenderStillFailureCallback = std::function<void()>;
+    void renderStill(RenderStillSuccessCallback, RenderStillFailureCallback);
 
     void triggerUpdate(Update = Update::Nothing);
 
@@ -61,6 +62,7 @@ public:
 
     // ResourceLoader::Observer implementation.
     void onTileDataChanged() override;
+    void onResourceLoadingFailed() override;
 
 private:
     void updateTiles();
@@ -92,7 +94,8 @@ private:
     std::string styleURL;
     std::string styleJSON;
 
-    StillImageCallback callback;
+    RenderStillSuccessCallback successCallback;
+    RenderStillFailureCallback failureCallback;
     size_t sourceCacheSize;
     TransformState transformState;
 };
