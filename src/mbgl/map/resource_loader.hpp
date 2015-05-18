@@ -68,6 +68,7 @@ public:
     void onSourceLoaded() override;
     void onSourceLoadingFailed() override;
     void onTileLoaded(bool isNewTile) override;
+    void onTileLoadingFailed() override;
 
     // Sprite::Observer implementation.
     void onSpriteLoaded() override;

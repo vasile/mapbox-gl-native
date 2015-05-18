@@ -120,6 +120,10 @@ void ResourceLoader::onTileLoaded(bool isNewTile) {
     emitTileDataChanged();
 }
 
+void ResourceLoader::onTileLoadingFailed() {
+    emitResourceLoadingFailed();
+}
+
 void ResourceLoader::onSpriteLoaded() {
     shouldReparsePartialTiles_ = true;
 
