@@ -71,6 +71,7 @@ public:
 
     // Sprite::Observer implementation.
     void onSpriteLoaded() override;
+    void onSpriteLoadingFailed() override;
 
 private:
     void emitTileDataChanged();

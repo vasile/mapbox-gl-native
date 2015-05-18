@@ -126,6 +126,10 @@ void ResourceLoader::onSpriteLoaded() {
     emitTileDataChanged();
 }
 
+void ResourceLoader::onSpriteLoadingFailed() {
+    emitResourceLoadingFailed();
+}
+
 void ResourceLoader::emitTileDataChanged() {
     assert(Environment::currentlyOn(ThreadType::Map));
 

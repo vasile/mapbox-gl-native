@@ -46,6 +46,8 @@ Sprite::Sprite(const std::string& baseUrl, float pixelRatio_)
             parseJSON();
         } else {
             Log::Warning(Event::Sprite, "Failed to load sprite info: %s", res.message.c_str());
+            emitSpriteLoadingFailed();
+            return;
         }
         loadedJSON = true;
         emitSpriteLoadedIfComplete();
@@ -58,6 +60,8 @@ Sprite::Sprite(const std::string& baseUrl, float pixelRatio_)
             parseImage();
         } else {
             Log::Warning(Event::Sprite, "Failed to load sprite image: %s", res.message.c_str());
+            emitSpriteLoadingFailed();
+            return;
         }
         loadedImage = true;
         emitSpriteLoadedIfComplete();
@@ -77,6 +81,12 @@ Sprite::~Sprite() {
 void Sprite::emitSpriteLoadedIfComplete() {
     if (isLoaded() && observer) {
         observer->onSpriteLoaded();
+    }
+}
+
+void Sprite::emitSpriteLoadingFailed() {
+    if (observer) {
+        observer->onSpriteLoadingFailed();
     }
 }
 
