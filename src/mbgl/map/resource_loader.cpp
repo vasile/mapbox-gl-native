@@ -108,6 +108,10 @@ void ResourceLoader::onSourceLoaded() {
     emitTileDataChanged();
 }
 
+void ResourceLoader::onSourceLoadingFailed() {
+    emitResourceLoadingFailed();
+}
+
 void ResourceLoader::onTileLoaded(bool isNewTile) {
     if (isNewTile) {
         shouldReparsePartialTiles_ = true;

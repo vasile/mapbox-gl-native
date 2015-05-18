@@ -151,6 +151,7 @@ void Source::load(const std::string& accessToken) {
 
         if (res.status != Response::Successful) {
             Log::Warning(Event::General, "Failed to load source TileJSON: %s", res.message.c_str());
+            emitSourceLoadingFailed();
             return;
         }
 
@@ -159,6 +160,7 @@ void Source::load(const std::string& accessToken) {
 
         if (d.HasParseError()) {
             Log::Error(Event::General, "Invalid source TileJSON; Parse Error at %d: %s", d.GetErrorOffset(), d.GetParseError());
+            emitSourceLoadingFailed();
             return;
         }
 
@@ -533,6 +535,12 @@ void Source::setObserver(Observer* observer) {
 void Source::emitSourceLoaded() {
     if (observer_) {
         observer_->onSourceLoaded();
+    }
+}
+
+void Source::emitSourceLoadingFailed() {
+    if (observer_) {
+        observer_->onSourceLoadingFailed();
     }
 }
 
