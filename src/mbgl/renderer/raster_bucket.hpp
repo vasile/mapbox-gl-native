@@ -24,7 +24,7 @@ public:
 
     const StyleLayoutRaster &layout;
 
-    void drawRaster(RasterShader& shader, StaticVertexBuffer &vertices, VertexArrayObject &array);
+    void drawRaster(RasterShader&, StaticVertexBuffer&, VertexArrayObject&, bool linear);
 
     Raster raster;
 };

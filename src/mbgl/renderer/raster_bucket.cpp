@@ -31,8 +31,8 @@ bool RasterBucket::setImage(const std::string &data) {
     return raster.load(data);
 }
 
-void RasterBucket::drawRaster(RasterShader& shader, StaticVertexBuffer &vertices, VertexArrayObject &array) {
-    raster.bind(true);
+void RasterBucket::drawRaster(RasterShader& shader, StaticVertexBuffer &vertices, VertexArrayObject &array, bool linear) {
+    raster.bind(linear);
     shader.u_image = 0;
     array.bind(shader, vertices, BUFFER_OFFSET(0));
     MBGL_CHECK_ERROR(glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.index()));
