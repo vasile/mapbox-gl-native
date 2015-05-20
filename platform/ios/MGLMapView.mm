@@ -148,12 +148,12 @@ std::chrono::steady_clock::duration secondsAsDuration(float duration)
 
 - (NSString *)accessToken
 {
-    return @(_mbglMap->getAccessToken().c_str()).mgl_stringOrNilIfEmpty;
+    return @(_mbglFileSource->getAccessToken().c_str()).mgl_stringOrNilIfEmpty;
 }
 
 - (void)setAccessToken:(NSString *)accessToken
 {
-    _mbglMap->setAccessToken(accessToken ? (std::string)[accessToken UTF8String] : "");
+    _mbglFileSource->setAccessToken(accessToken ? (std::string)[accessToken UTF8String] : "");
     [MGLAccountManager setAccessToken:accessToken.mgl_stringOrNilIfEmpty];
 }
 
